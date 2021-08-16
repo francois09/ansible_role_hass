@@ -1,0 +1,35 @@
+---
+- name: Hass install packages
+  apt:
+    name: "{{ hass__default_packages }}"
+    update_cache: yes
+    state: present
+  when: hass__install
+
+- name: Hass install docker repository key
+  apt_key:
+    url: https://download.docker.com/linux/debian/gpg
+    state: present
+  when: hass__install
+
+- name: Hass add docker repository
+  apt_repository:
+    repo: deb https://download.docker.com/linux/debian buster stable
+    state: present
+    filename: hass_docker
+  when: hass__install
+
+- name: Hass install Docker packages
+  apt:
+    name: "{{ hass__docker_packages }}"
+    update_cache: yes
+    state: present
+  when: hass__install
+
+- name: Get install script
+  get_url:
+    url: https://raw.githubusercontent.com/home-assistant/supervised-installer/master/installer.sh
+    dest: /root/installer.sh
+    mode: 755
+  when: hass__install
+

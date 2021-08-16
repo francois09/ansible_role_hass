@@ -1,0 +1,21 @@
+---
+# Default do nothing
+hass__install: False
+hass__configure: False
+
+# defaults file for hass
+hass__default_packages:
+  - apt-transport-https
+  - ca-certificates
+  - gnupg-agent
+  - software-properties-common
+  - jq
+  - avahi-daemon
+  - network-manager
+  - apparmor
+
+hass__docker_packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+
