@@ -6,30 +6,98 @@
     state: present
   when: hass__install
 
-- name: Hass install docker repository key
-  apt_key:
-    url: https://download.docker.com/linux/debian/gpg
-    state: present
-  when: hass__install
+# - name: Hass install docker repository key
+#   apt_key:
+#     url: https://download.docker.com/linux/debian/gpg
+#     state: present
+#   when: hass__install
 
-- name: Hass add docker repository
-  apt_repository:
-    repo: deb https://download.docker.com/linux/debian buster stable
-    state: present
-    filename: hass_docker
-  when: hass__install
+# - name: Hass add docker repository
+#   apt_repository:
+#     repo: deb https://download.docker.com/linux/debian bullseye stable
+#     state: present
+#     filename: hass_docker_bullseye
+#   when: hass__install
 
-- name: Hass install Docker packages
-  apt:
-    name: "{{ hass__docker_packages }}"
-    update_cache: yes
-    state: present
-  when: hass__install
+# - name: Hass install Docker packages
+#   apt:
+#     name: "{{ hass__docker_packages }}"
+#     update_cache: yes
+#     state: present
+#   when: hass__install
 
-- name: Get install script
+- name: Get docker compatible version
   get_url:
-    url: https://raw.githubusercontent.com/home-assistant/supervised-installer/master/installer.sh
-    dest: /root/installer.sh
-    mode: 755
+    url: https://get.docker.com
+    dest: /root/get_docker.sh
+    mode: 0755
+  register: get_docker
   when: hass__install
+
+- name: Run getDocker
+  shell:
+    cmd: /root/get_docker.sh
+  when:
+    - hass__install
+    - get_docker is changed
+
+- name: Get os-agent install package
+  get_url:
+    url: https://github.com/home-assistant/os-agent/releases/download/1.4.1/os-agent_1.4.1_linux_x86_64.deb
+    dest: /root/os-agent_1.4.1_linux_x86_64.deb
+    mode: 0755
+  register: get_os_agent
+  when: hass__install
+
+- name: dpkg install os-agent package
+  shell:
+    cmd: dpkg -i /root/os-agent_1.4.1_linux_x86_64.deb
+  when:
+    - hass__install
+    - get_os_agent is changed
+
+- name: Get install package
+  get_url:
+    url: https://github.com/home-assistant/supervised-installer/releases/latest/download/homeassistant-supervised.deb
+    dest: /root/homeassistant-supervised.deb
+    mode: 0755
+  register: get_install_package
+  when: hass__install
+
+- name: dpkg install package
+  shell:
+    cmd: dpkg -i /root/homeassistant-supervised.deb
+  when:
+    - hass__install
+    - get_install_package is changed
+
+- name: Avoid network manager to manage DNS
+  lineinfile:
+    path: /etc/NetworkManager/NetworkManager.conf
+    regexp: '^dns='
+    state: present
+    line: "dns=none" # and maybe "rc-manager=unmanaged"
+  notify: Restart NetworkManager
+  when:
+    - hass__install
+    - hass__configure
+
+- name: Setup nginx config for HA
+  template:
+    src: hass.conf
+    dest: /etc/nginx/conf.d/hass.conf
+  notify: Reload nginx service
+  when:
+    - hass__install
+    - hass__configure
+
+- name: Setup nginx config for zigbee
+  template:
+    src: zigbee.conf
+    dest: /etc/nginx/conf.d/zigbee.conf
+  notify: Reload nginx service
+  when:
+    - hass__install
+    - hass__configure
+    - hass__zigbee_sidecar
 
