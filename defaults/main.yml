@@ -13,9 +13,13 @@ hass__default_packages:
   - avahi-daemon
   - network-manager
   - apparmor
+  - wget
+  - udisks2
+  - systemd-journal-remote
+  - nginx
 
-hass__docker_packages:
-  - docker-ce
-  - docker-ce-cli
-  - containerd.io
+hass__docker_packages: []
+  # - docker-ce
+  # - docker-ce-cli
+  # - containerd.io
 

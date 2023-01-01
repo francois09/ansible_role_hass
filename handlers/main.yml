@@ -1,2 +1,11 @@
 ---
 # Hass handlers
+- name: Restart NetworkManager
+  service:
+    name: NetworkManager
+    state: restarted
+
+- name: Reload nginx service
+  service:
+    name: nginx
+    state: reloaded
