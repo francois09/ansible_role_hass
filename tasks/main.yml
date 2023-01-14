@@ -6,25 +6,31 @@
     state: present
   when: hass__install
 
-# - name: Hass install docker repository key
-#   apt_key:
-#     url: https://download.docker.com/linux/debian/gpg
-#     state: present
-#   when: hass__install
+- name: Hass install docker repository key
+  apt_key:
+    url: https://download.docker.com/linux/debian/gpg
+    state: present
+  when:
+    - hass__install
+    - hass__install_packaged_docker
 
-# - name: Hass add docker repository
-#   apt_repository:
-#     repo: deb https://download.docker.com/linux/debian bullseye stable
-#     state: present
-#     filename: hass_docker_bullseye
-#   when: hass__install
+- name: Hass add docker repository
+  apt_repository:
+    repo: deb https://download.docker.com/linux/debian bullseye stable
+    state: present
+    filename: hass_docker_bullseye
+  when:
+    - hass__install
+    - hass__install_packaged_docker
 
-# - name: Hass install Docker packages
-#   apt:
-#     name: "{{ hass__docker_packages }}"
-#     update_cache: yes
-#     state: present
-#   when: hass__install
+- name: Hass install Docker packages
+  apt:
+    name: "{{ hass__docker_packages }}"
+    update_cache: yes
+    state: present
+  when:
+    - hass__install
+    - hass__install_packaged_docker
 
 - name: Get docker compatible version
   get_url:
@@ -32,7 +38,9 @@
     dest: /root/get_docker.sh
     mode: 0755
   register: get_docker
-  when: hass__install
+  when:
+    - hass__install
+    - not hass__install_packaged_docker
 
 - name: Run getDocker
   shell:
@@ -64,23 +72,24 @@
   register: get_install_package
   when: hass__install
 
-- name: dpkg install package
-  shell:
-    cmd: dpkg -i /root/homeassistant-supervised.deb
+- name: Fix install bug
+  file:
+    path: "{{ hass_data_dir }}/apparmor"
+    recurse: true
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
   when:
     - hass__install
     - get_install_package is changed
 
-- name: Avoid network manager to manage DNS
-  lineinfile:
-    path: /etc/NetworkManager/NetworkManager.conf
-    regexp: '^dns='
-    state: present
-    line: "dns=none" # and maybe "rc-manager=unmanaged"
-  notify: Restart NetworkManager
+- name: dpkg install package
+  shell:
+    cmd: "DATA_SHARE={{ hass_data_dir }} dpkg -i /root/homeassistant-supervised.deb"
   when:
     - hass__install
-    - hass__configure
+    - get_install_package is changed
 
 - name: Setup nginx config for HA
   template:

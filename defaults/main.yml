@@ -1,7 +1,10 @@
 ---
 # Default do nothing
 hass__install: False
+hass__install_packaged_docker: True
 hass__configure: False
+
+hass__data_dir: "/opt/hassio"
 
 # defaults file for hass
 hass__default_packages:
@@ -18,8 +21,8 @@ hass__default_packages:
   - systemd-journal-remote
   - nginx
 
-hass__docker_packages: []
-  # - docker-ce
-  # - docker-ce-cli
-  # - containerd.io
+hass__docker_packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
 
