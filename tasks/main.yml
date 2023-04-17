@@ -72,24 +72,21 @@
   register: get_install_package
   when: hass__install
 
-- name: Fix install bug
-  file:
-    path: "{{ hass_data_dir }}/apparmor"
-    recurse: true
-    state: directory
-    owner: root
-    group: root
-    mode: 0755
+- name: dpkg install package
+  shell:
+    cmd: "DATA_SHARE={{ hass__data_dir }} dpkg -i /root/homeassistant-supervised.deb"
   when:
     - hass__install
     - get_install_package is changed
+    - hass__data_dir is defined
 
 - name: dpkg install package
   shell:
-    cmd: "DATA_SHARE={{ hass_data_dir }} dpkg -i /root/homeassistant-supervised.deb"
+    cmd: "dpkg -i /root/homeassistant-supervised.deb"
   when:
     - hass__install
     - get_install_package is changed
+    - hass__data_dir is not defined
 
 - name: Setup nginx config for HA
   template:
