@@ -4,7 +4,7 @@ hass__install: False
 hass__install_packaged_docker: True
 hass__configure: False
 
-hass__data_dir: "/opt/hassio"
+# hass__data_dir:
 
 # defaults file for hass
 hass__default_packages:

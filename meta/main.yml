@@ -1,0 +1,10 @@
+galaxy_info:
+  author: François TOURDE
+  description: Manage HomeAssistant Supervised version install
+  license: GPL-2.0-or-later
+
+  min_ansible_version: 2.7
+
+  galaxy_tags: []
+
+dependencies: []
