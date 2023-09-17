@@ -88,6 +88,15 @@
     - get_install_package is changed
     - hass__data_dir is not defined
 
+- name: Setup nginx service for restarting always
+  template:
+    src: nginx.service
+    dest: /etc/systemd/system/nginx.service
+  notify: Reload nginx service
+  when:
+    - hass__install
+    - hass__configure
+
 - name: Setup nginx config for HA
   template:
     src: hass.conf
